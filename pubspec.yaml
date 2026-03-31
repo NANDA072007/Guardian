@@ -1,0 +1,35 @@
+# pubspec.yaml
+name: guardian
+description: "Guardian — System-level content blocker for addiction recovery."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  flutter_riverpod: ^2.5.1
+  go_router: ^13.2.0
+  flutter_secure_storage: ^9.0.0
+  crypto: ^3.0.3
+  shared_preferences: ^2.2.2
+  flutter_local_notifications: ^17.0.0
+  # FIX: timezone required by flutter_local_notifications for scheduled notifications
+  timezone: ^0.9.4
+  fl_chart: ^0.68.0
+  lottie: ^3.1.0
+  intl: ^0.19.0
+  url_launcher: ^6.2.5
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  mocktail: ^1.0.3
+
+flutter:
+  uses-material-design: true
