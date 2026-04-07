@@ -4,7 +4,7 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
     // FIX: KSP version must match Kotlin version Flutter uses (2.1.20)
     // Remove kotlin-kapt entirely — KAPT doesn't support Kotlin 2.2 metadata
-    id("com.google.devtools.ksp") version "1.9.24-1.0.20"
+    id("com.google.devtools.ksp") version "2.2.0-1.0.24"
 }
 
 android {
@@ -47,7 +47,6 @@ dependencies {
     // Room — using KSP not KAPT
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")   // KSP, not kapt
 
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.9.0")
@@ -57,7 +56,7 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-tasks:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 
     implementation("androidx.core:core-ktx:1.12.0")
 }

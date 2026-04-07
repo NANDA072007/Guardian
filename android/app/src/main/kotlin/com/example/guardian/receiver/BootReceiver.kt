@@ -17,7 +17,7 @@ class BootReceiver : BroadcastReceiver() {
         private const val TAG = "GuardianBootReceiver"
     }
 
-    override fun onReceive(context: Context?, intent: Intent?) {
+    override fun onReceive(context: Co   ntext?, intent: Intent?) {
         if (context == null || intent == null) {
             Log.e(TAG, "Boot: null context or intent")
             return

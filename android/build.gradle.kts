@@ -1,3 +1,4 @@
+
 allprojects {
     repositories {
         google()
@@ -21,8 +22,4 @@ subprojects {
 
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
-}
-
-plugins {
-    id("com.google.devtools.ksp") version "1.9.24-1.0.20" apply false
 }
