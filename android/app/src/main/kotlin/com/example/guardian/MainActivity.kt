@@ -36,7 +36,7 @@ class MainActivity: FlutterActivity() {
                         val intent = Intent(this, GuardianVpnService::class.java)
                         intent.action = GuardianVpnService.ACTION_START
                         startService(intent)
-                        result.success(true)
+                        result.success(false)
                     }
 
                     "stopVpn" -> {

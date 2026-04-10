@@ -1,22 +1,19 @@
-// lib/app.dart
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import 'package:guardian/core/constants.dart';
-import 'package:guardian/screens/splash_screen.dart';
-import 'package:guardian/screens/dashboard_screen.dart';
-import 'package:guardian/screens/emergency_screen.dart';
-import 'package:guardian/screens/settings_screen.dart';
-import 'package:guardian/screens/analytics_screen.dart';
-import 'package:guardian/screens/challenge_screen.dart';
-import 'package:guardian/screens/block_overlay_screen.dart';
-import 'package:guardian/screens/onboarding/welcome_screen.dart';
-import 'package:guardian/screens/onboarding/set_password_screen.dart';
-import 'package:guardian/screens/onboarding/activate_admin_screen.dart';
-import 'package:guardian/screens/onboarding/enable_vpn_screen.dart';
-import 'package:guardian/screens/onboarding/enable_accessibility_screen.dart';
-import 'package:guardian/screens/onboarding/password_handoff_screen.dart';
+
+import 'core/constants.dart';
+import 'screens/analytics_screen.dart';
+import 'screens/block_overlay_screen.dart';
+import 'screens/challenge_screen.dart';
+import 'screens/dashboard_screen.dart';
+import 'screens/emergency_screen.dart';
+import 'screens/onboarding/activate_admin_screen.dart';
+import 'screens/onboarding/enable_accessibility_screen.dart';
+import 'screens/onboarding/enable_vpn_screen.dart';
+import 'screens/onboarding/password_handoff_screen.dart';
+import 'screens/onboarding/set_password_screen.dart';
+import 'screens/onboarding/welcome_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/splash_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 

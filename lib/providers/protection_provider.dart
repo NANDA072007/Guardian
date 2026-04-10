@@ -2,6 +2,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guardian/services/protection_service.dart';
 
+import '../services/protection_service.dart';
+
 final protectionProvider =
     AsyncNotifierProvider<ProtectionNotifier, ProtectionStatus>(
   ProtectionNotifier.new,

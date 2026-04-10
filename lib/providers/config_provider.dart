@@ -1,9 +1,10 @@
 // lib/providers/config_provider.dart
 // FIX: %20 import path corrected
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:guardian/%20models/guardian_config.dart';
-import 'package:guardian/core/secure_storage.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+import '../ models/guardian_config.dart';
+import '../core/secure_storage.dart';
 
 // ==================== STORAGE PROVIDER ====================
 

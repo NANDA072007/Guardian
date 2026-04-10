@@ -17,13 +17,14 @@ class BootReceiver : BroadcastReceiver() {
         private const val TAG = "GuardianBootReceiver"
     }
 
-    override fun onReceive(context: Co   ntext?, intent: Intent?) {
+    override fun onReceive(context: Context?, intent: Intent?) {
         if (context == null || intent == null) {
             Log.e(TAG, "Boot: null context or intent")
             return
         }
 
-        when (intent.action) {
+        val action = intent.action ?: return
+        when (action) {
             Intent.ACTION_BOOT_COMPLETED,
             Intent.ACTION_LOCKED_BOOT_COMPLETED,
             Intent.ACTION_MY_PACKAGE_REPLACED -> {

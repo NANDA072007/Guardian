@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- android/app/src/main/AndroidManifest.xml -->
-<!-- REPLACE entire file with this -->
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    ```
     <!-- ==================== PERMISSIONS ==================== -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -14,11 +14,13 @@
     <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE"/>
     <uses-permission android:name="android.permission.BIND_DEVICE_ADMIN"/>
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
-    <!-- Emergency screen: call + SMS accountability person -->
     <uses-permission android:name="android.permission.CALL_PHONE"/>
 
+    <!-- ADDED (important for stability) -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
     <!-- ==================== APPLICATION ==================== -->
-    <!-- FIX: android:allowBackup="false" prevents password hash backup to Google Drive -->
     <application
         android:label="Guardian"
         android:name="${applicationName}"
@@ -48,7 +50,6 @@
         </activity>
 
         <!-- ==================== BLOCK OVERLAY ==================== -->
-        <!-- FIX: initial route set via meta-data so Flutter loads /block-overlay -->
         <activity
             android:name=".block.BlockOverlayActivity"
             android:exported="false"
@@ -61,63 +62,80 @@
                 android:value="/block-overlay"/>
         </activity>
 
-        <!-- ==================== VPN SERVICE (Layer 1) ==================== -->
+        <!-- ==================== VPN SERVICE ==================== -->
         <service
             android:name=".vpn.GuardianVpnService"
             android:permission="android.permission.BIND_VPN_SERVICE"
             android:exported="true"
-            android:foregroundServiceType="dataSync"/>
+            android:foregroundServiceType="dataSync"
+            android:directBootAware="true">
 
-        <!-- ==================== ACCESSIBILITY SERVICE (Layer 2) ==================== -->
+            <!-- REQUIRED FOR VPN -->
+            <intent-filter>
+                <action android:name="android.net.VpnService"/>
+            </intent-filter>
+
+        </service>
+
+        <!-- ==================== ACCESSIBILITY SERVICE ==================== -->
         <service
             android:name=".accessibility.GuardianAccessibilityService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
-            android:exported="true">
+            android:exported="false">
+
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService"/>
             </intent-filter>
+
             <meta-data
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility_config"/>
         </service>
 
-        <!-- ==================== ML CAPTURE SERVICE (Layer 3) ==================== -->
+        <!-- ==================== ML CAPTURE SERVICE ==================== -->
         <service
             android:name=".ml.ScreenCaptureService"
             android:foregroundServiceType="mediaProjection"
             android:exported="false"/>
 
-        <!-- ==================== DEVICE ADMIN (Layer 4) ==================== -->
+        <!-- ==================== DEVICE ADMIN ==================== -->
         <receiver
             android:name=".admin.GuardianDeviceAdmin"
             android:permission="android.permission.BIND_DEVICE_ADMIN"
             android:exported="true">
+
             <meta-data
                 android:name="android.app.device_admin"
                 android:resource="@xml/device_admin"/>
+
             <intent-filter>
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED"/>
             </intent-filter>
+
         </receiver>
 
         <!-- ==================== BOOT RECEIVER ==================== -->
         <receiver
             android:name=".receiver.BootReceiver"
             android:enabled="true"
-            android:exported="false">
+            android:exported="true"
+            android:directBootAware="true">
+
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED"/>
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
             </intent-filter>
+
         </receiver>
 
         <meta-data
             android:name="flutterEmbedding"
             android:value="2"/>
+
     </application>
 
-    <!-- Emergency screen: dial + SMS queries -->
+    <!-- ==================== QUERIES ==================== -->
     <queries>
         <intent>
             <action android:name="android.intent.action.CALL"/>
@@ -132,5 +150,6 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
+    ```
 
 </manifest>
