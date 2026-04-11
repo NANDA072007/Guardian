@@ -24,6 +24,8 @@ class GuardianVpnService : VpnService() {
         private const val TAG = "GuardianVPN"
         private const val NOTIFICATION_ID  = 1001
         private const val CHANNEL_ID = "guardian_vpn"
+        @Volatile
+        var isRunning: Boolean = false
     }
 
     private var vpnInterface: ParcelFileDescriptor? = null
@@ -64,6 +66,7 @@ class GuardianVpnService : VpnService() {
 
     private fun startVpn() {
         if (vpnInterface != null) return
+        isRunning = true
 
         // FIX: startForeground() MUST be called before establish() on Android 8+
         // Previously called AFTER establish() — could timeout and crash
@@ -116,6 +119,7 @@ class GuardianVpnService : VpnService() {
     }
 
     private fun stopVpn() {
+        isRunning = false
         scope.cancel()
         dnsSocket?.close()
         dnsSocket = null
@@ -126,6 +130,7 @@ class GuardianVpnService : VpnService() {
 
     private fun closeVpnInterface() {
         try { vpnInterface?.close() } catch (_: Exception) {}
+        isRunning = false
         vpnInterface = null
     }
 

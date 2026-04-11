@@ -17,7 +17,8 @@ class ChallengeScreen extends ConsumerWidget {
         // FIX: Explicit StreakRecord? type annotation — without it the type is
         // inferred as 'Object' when StreakRecord import is not resolved, making
         // .totalDays inaccessible. Explicit annotation ensures correct resolution.
-        data: (StreakRecord? record) {
+        data: (
+            StreakRecord? record) {
           final day = (record?.totalDays ?? 1).clamp(1, 21);
           final progress = day / 21;
 

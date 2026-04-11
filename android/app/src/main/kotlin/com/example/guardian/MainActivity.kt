@@ -11,7 +11,7 @@ import io.flutter.plugin.common.MethodChannel
 import com.example.guardian.admin.GuardianDeviceAdmin
 import com.example.guardian.vpn.GuardianVpnService
 
-class MainActivity: FlutterActivity() {
+class MainActivity : FlutterActivity() {
 
     private val CHANNEL = "guardian/protection"
 
@@ -21,8 +21,8 @@ class MainActivity: FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
             .setMethodCallHandler { call, result ->
 
-                when (call.method) {
 
+                when (call.method) {
                     "activateDeviceAdmin" -> {
                         activateDeviceAdmin()
                         result.success(null)

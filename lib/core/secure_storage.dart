@@ -2,7 +2,7 @@
 // FIX: Import was 'package:guardian/%20models/guardian_config.dart'
 // %20 is URL-encoded space — folder is lib/models/ with no space
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:guardian/models/guardian_config.dart';
+import 'package:guardian/%20models/guardian_config.dart';
 import 'constants.dart';
 
 sealed class SecureStorageException implements Exception {

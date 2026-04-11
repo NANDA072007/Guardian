@@ -1,5 +1,5 @@
 // lib/models/streak_record.dart — unchanged from original, already correct
-
+import 'package:flutter/foundation.dart';
 
 @immutable
 class StreakRecord {
