@@ -1,5 +1,4 @@
 // lib/models/guardian_config.dart
-// FIX applied: All 7 fields present (was missing 4 in original)
 import 'dart:convert';
 
 class GuardianConfig {
@@ -11,6 +10,7 @@ class GuardianConfig {
   final bool deviceAdminActive;
   final bool vpnActive;
   final bool accessibilityActive;
+  final String protectionMode; // "normal" or "strict"
 
   const GuardianConfig({
     required this.passwordHash,
@@ -21,13 +21,15 @@ class GuardianConfig {
     this.deviceAdminActive = false,
     this.vpnActive = false,
     this.accessibilityActive = false,
+    required this.protectionMode,
   });
 
   factory GuardianConfig.initial() => GuardianConfig(
-        passwordHash: '',
-        setupDate: DateTime.fromMillisecondsSinceEpoch(0),
-        isConfigured: false,
-      );
+    passwordHash: '',
+    setupDate: DateTime.fromMillisecondsSinceEpoch(0),
+    isConfigured: false,
+    protectionMode: 'normal', // ✅ FIX
+  );
 
   GuardianConfig copyWith({
     String? passwordHash,
@@ -38,6 +40,7 @@ class GuardianConfig {
     bool? deviceAdminActive,
     bool? vpnActive,
     bool? accessibilityActive,
+    String? protectionMode, // ✅ FIX
   }) {
     return GuardianConfig(
       passwordHash: passwordHash ?? this.passwordHash,
@@ -47,33 +50,38 @@ class GuardianConfig {
       accountabilityPhone: accountabilityPhone ?? this.accountabilityPhone,
       deviceAdminActive: deviceAdminActive ?? this.deviceAdminActive,
       vpnActive: vpnActive ?? this.vpnActive,
-      accessibilityActive: accessibilityActive ?? this.accessibilityActive,
+      accessibilityActive:
+      accessibilityActive ?? this.accessibilityActive,
+      protectionMode: protectionMode ?? this.protectionMode, // ✅ FIX
     );
   }
 
   Map<String, dynamic> toMap() => {
-        'passwordHash': passwordHash,
-        'setupDate': setupDate.toIso8601String(),
-        'isConfigured': isConfigured,
-        'accountabilityName': accountabilityName,
-        'accountabilityPhone': accountabilityPhone,
-        'deviceAdminActive': deviceAdminActive,
-        'vpnActive': vpnActive,
-        'accessibilityActive': accessibilityActive,
-      };
+    'passwordHash': passwordHash,
+    'setupDate': setupDate.toIso8601String(),
+    'isConfigured': isConfigured,
+    'accountabilityName': accountabilityName,
+    'accountabilityPhone': accountabilityPhone,
+    'deviceAdminActive': deviceAdminActive,
+    'vpnActive': vpnActive,
+    'accessibilityActive': accessibilityActive,
+    'protectionMode': protectionMode, // ✅ FIX
+  };
 
   factory GuardianConfig.fromMap(Map<String, dynamic> map) {
     if (map.isEmpty) return GuardianConfig.initial();
+
     return GuardianConfig(
-      passwordHash: map['passwordHash'] as String? ?? '',
-      setupDate: DateTime.tryParse(map['setupDate'] as String? ?? '') ??
+      passwordHash: map['passwordHash'] ?? '',
+      setupDate: DateTime.tryParse(map['setupDate'] ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
-      isConfigured: map['isConfigured'] as bool? ?? false,
-      accountabilityName: map['accountabilityName'] as String?,
-      accountabilityPhone: map['accountabilityPhone'] as String?,
-      deviceAdminActive: map['deviceAdminActive'] as bool? ?? false,
-      vpnActive: map['vpnActive'] as bool? ?? false,
-      accessibilityActive: map['accessibilityActive'] as bool? ?? false,
+      isConfigured: map['isConfigured'] ?? false,
+      accountabilityName: map['accountabilityName'],
+      accountabilityPhone: map['accountabilityPhone'],
+      deviceAdminActive: map['deviceAdminActive'] ?? false,
+      vpnActive: map['vpnActive'] ?? false,
+      accessibilityActive: map['accessibilityActive'] ?? false,
+      protectionMode: map['protectionMode'] ?? 'normal', // ✅ FIX
     );
   }
 
@@ -81,7 +89,7 @@ class GuardianConfig {
 
   factory GuardianConfig.fromJson(String source) {
     try {
-      return GuardianConfig.fromMap(jsonDecode(source) as Map<String, dynamic>);
+      return GuardianConfig.fromMap(jsonDecode(source));
     } catch (_) {
       return GuardianConfig.initial();
     }

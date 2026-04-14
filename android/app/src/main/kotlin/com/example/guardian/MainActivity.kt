@@ -33,10 +33,17 @@ class MainActivity : FlutterActivity() {
                     }
 
                     "startVpn" -> {
-                        val intent = Intent(this, GuardianVpnService::class.java)
-                        intent.action = GuardianVpnService.ACTION_START
-                        startService(intent)
-                        result.success(false)
+                        val intent = android.net.VpnService.prepare(this)
+
+                        if (intent != null) {
+                            // User has NOT granted permission yet → show system popup
+                            startActivityForResult(intent, 1001)
+                            result.success(false)
+                        } else {
+                            // Permission already granted → start VPN directly
+                            startVpnService()
+                            result.success(true)
+                        }
                     }
 
                     "stopVpn" -> {
@@ -45,7 +52,20 @@ class MainActivity : FlutterActivity() {
                     }
 
                     "isVpnRunning" -> {
-                        result.success(GuardianVpnService.isRunning)
+                        val manager = getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+                        val networks = manager.allNetworks
+
+                        var isVpnActive = false
+
+                        for (network in networks) {
+                            val caps = manager.getNetworkCapabilities(network)
+                            if (caps?.hasTransport(android.net.NetworkCapabilities.TRANSPORT_VPN) == true) {
+                                isVpnActive = true
+                                break
+                            }
+                        }
+
+                        result.success(isVpnActive)
                     }
 
                     "isAccessibilityEnabled" -> {
@@ -95,5 +115,21 @@ class MainActivity : FlutterActivity() {
             Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
         )
         return enabled?.contains(packageName) == true
+    }
+    private fun startVpnService() {
+        val intent = Intent(this, GuardianVpnService::class.java)
+        intent.action = GuardianVpnService.ACTION_START
+        androidx.core.content.ContextCompat.startForegroundService(this, intent)
+
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == 1001) {
+            if (resultCode == RESULT_OK) {
+                startVpnService()
+            }
+        }
     }
 }

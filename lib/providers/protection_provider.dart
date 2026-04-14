@@ -1,5 +1,6 @@
 // lib/providers/protection_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:guardian/providers/config_provider.dart';
 import 'package:guardian/services/protection_service.dart' ;
 
 final protectionProvider =
@@ -26,9 +27,16 @@ class ProtectionNotifier extends AsyncNotifier<ProtectionStatus> {
 
   Future<bool> startVpn() async {
     try {
-      final started = await _service.startVpn();
-      await refresh();
-      return started;
+      final config = ref.read(configProvider).value;
+
+      if (config is ConfigReady &&
+          config.config.protectionMode == "strict") {
+        final started = await _service.startVpn();
+        await refresh();
+        return started;
+      }
+
+      return false;
     } catch (_) {
       return false;
     }

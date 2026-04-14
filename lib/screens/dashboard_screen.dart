@@ -1,8 +1,8 @@
-// lib/screens/dashboard_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:guardian/%20models/streak_record.dart';
+import 'package:guardian/providers/config_provider.dart';
 import 'package:guardian/providers/protection_provider.dart';
 import 'package:guardian/providers/streak_provider.dart';
 import 'package:guardian/core/constants.dart';
@@ -15,7 +15,8 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final protectionAsync = ref.watch(protectionProvider);
-    final streakAsync     = ref.watch(streakProvider);
+    final streakAsync = ref.watch(streakProvider);
+    final configState = ref.watch(configProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -38,6 +39,7 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ],
       ),
+
       body: RefreshIndicator(
         onRefresh: () async {
           await Future.wait([
@@ -48,23 +50,62 @@ class DashboardScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+
+            // ✅ MODE DISPLAY (FIXED CORRECTLY)
+            configState.when(
+              data: (state) {
+                if (state is ConfigReady) {
+                  final isStrict =
+                      state.config.protectionMode == "strict";
+
+                  return Container(
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: isStrict
+                          ? Colors.red.withOpacity(0.2)
+                          : Colors.green.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      "Mode: ${state.config.protectionMode.toUpperCase()}",
+                      style: TextStyle(
+                        color: isStrict ? Colors.red : Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  );
+                }
+                return const SizedBox();
+              },
+              loading: () => const SizedBox(),
+              error: (_, __) => const SizedBox(),
+            ),
+
             _buildStreakCard(streakAsync),
             const SizedBox(height: 16),
+
             const MotivationalQuote(),
             const SizedBox(height: 16),
+
             protectionAsync.when(
               data: (status) => ProtectionStatusCard(status: status),
               loading: () => const LinearProgressIndicator(),
               error: (e, st) =>
-                  const Text('Failed to load protection status'),
+              const Text('Failed to load protection status'),
             ),
+
             const SizedBox(height: 16),
+
             protectionAsync.when(
-              data: (status) => _buildBlockCountCard(status.blockCount),
+              data: (status) =>
+                  _buildBlockCountCard(status.blockCount),
               loading: () => const SizedBox.shrink(),
               error: (e, st) => const SizedBox.shrink(),
             ),
+
             const SizedBox(height: 24),
+
             SizedBox(
               width: double.infinity,
               height: 52,
@@ -83,10 +124,12 @@ class DashboardScreen extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFEF4444),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),
+
             const SizedBox(height: 32),
           ],
         ),
@@ -99,23 +142,24 @@ class DashboardScreen extends ConsumerWidget {
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: streakAsync.when(
-          // FIX: Explicit StreakRecord? type — prevents 'Object' inference
-          // which causes .totalDays and .startDate to be unresolvable
           data: (StreakRecord? record) {
             if (record == null) {
               return const Text('Start your streak today.');
             }
+
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
                   'CURRENT STREAK',
                   style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey,
-                      letterSpacing: 1.2),
+                    fontSize: 11,
+                    color: Colors.grey,
+                    letterSpacing: 1.2,
+                  ),
                 ),
                 const SizedBox(height: 8),
+
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -134,23 +178,30 @@ class DashboardScreen extends ConsumerWidget {
                       child: Text(
                         'days',
                         style: TextStyle(
-                            fontSize: 20, color: Colors.grey),
+                          fontSize: 20,
+                          color: Colors.grey,
+                        ),
                       ),
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 4),
+
                 Text(
                   'Since ${_formatDate(record.startDate)}',
                   style: const TextStyle(
-                      color: Colors.grey, fontSize: 13),
+                    color: Colors.grey,
+                    fontSize: 13,
+                  ),
                 ),
               ],
             );
           },
           loading: () =>
-              const Center(child: CircularProgressIndicator()),
-          error: (e, st) => const Text('Streak data unavailable'),
+          const Center(child: CircularProgressIndicator()),
+          error: (e, st) =>
+          const Text('Streak data unavailable'),
         ),
       ),
     );
@@ -159,21 +210,27 @@ class DashboardScreen extends ConsumerWidget {
   Widget _buildBlockCountCard(int count) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding:
+        const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Row(
           children: [
-            const Icon(Icons.shield_outlined,
-                color: Color(0xFF4F8EF7), size: 32),
+            const Icon(
+              Icons.shield_outlined,
+              color: Color(0xFF4F8EF7),
+              size: 32,
+            ),
             const SizedBox(width: 16),
+
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
                   'BLOCKED ATTEMPTS',
                   style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey,
-                      letterSpacing: 1.2),
+                    fontSize: 11,
+                    color: Colors.grey,
+                    letterSpacing: 1.2,
+                  ),
                 ),
                 Text(
                   '$count',

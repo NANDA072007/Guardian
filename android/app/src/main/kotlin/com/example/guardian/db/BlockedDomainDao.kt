@@ -1,14 +1,18 @@
-// android/app/src/main/kotlin/com/example/guardian/db/BlockedDomainDao.kt
-// No changes from original — already correct
 package com.example.guardian.db
 
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 
 @Dao
 interface BlockedDomainDao {
 
-    // Exact match — uses the domain index. O(log n) on 100k domains.
+    // ✅ INSERT (NEW — REQUIRED)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertAll(domains: List<BlockedDomainEntity>)
+
+    // Exact match — fast lookup
     @Query("""
         SELECT EXISTS(
             SELECT 1 FROM blocked_domains 
@@ -18,15 +22,14 @@ interface BlockedDomainDao {
     """)
     suspend fun isExactDomainBlocked(domain: String): Boolean
 
-    // Full load for VPN preload into ConcurrentHashMap
+    // Load all domains for VPN
     @Query("SELECT domain FROM blocked_domains")
     suspend fun getAllDomains(): List<String>
 
     @Query("SELECT COUNT(*) FROM blocked_domains")
     suspend fun getDomainCount(): Int
 
-    // WARNING: LIKE query cannot use index — full table scan on 100k rows.
-    // Never use on the VPN hot path. Only for fallback/debug.
+    // Slow — do NOT use in VPN loop
     @Query("""
         SELECT EXISTS(
             SELECT 1 FROM blocked_domains 

@@ -67,7 +67,12 @@ class _EnableAccessibilityScreenState
         // Since we can't reverse SHA-256, we stored a temp flag or ask user to re-enter
         // Simple solution: navigate without password extra — handoff will prompt re-entry
         // FIX: Navigate using GoRouter, not old Navigator API
-        context.go(GuardianConstants.routePasswordHandoff, extra: '');
+        final password = GoRouterState.of(context).extra as String?;
+
+        context.go(
+          GuardianConstants.routePasswordHandoff,
+          extra: password ?? '',
+        );
       } else {
         setState(() => _error = 'Accessibility not enabled yet. Open Settings and enable Guardian.');
       }

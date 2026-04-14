@@ -2,9 +2,8 @@
 // FIX: %20 import path corrected
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-
-import '../ models/guardian_config.dart';
-import '../core/secure_storage.dart';
+import 'package:guardian/%20models/guardian_config.dart';
+import '../core/secure_storage.dart'; // ✅ FIX PATH
 
 // ==================== STORAGE PROVIDER ====================
 
@@ -62,19 +61,25 @@ class ConfigController extends AsyncNotifier<ConfigState> {
     required String accountabilityName,
     required String accountabilityPhone,
   }) async {
-    final currentState = state.value;
-    if (currentState is! ConfigReady) {
-      throw Exception('Config not ready — cannot complete setup');
+    state = const AsyncLoading();
+
+    try {
+      final storage = ref.read(secureStorageProvider);
+      final current = await storage.getConfig();
+
+      final updated = current.copyWith(
+        accountabilityName: accountabilityName,
+        accountabilityPhone: accountabilityPhone,
+        isConfigured: true,
+      );
+
+      await storage.saveConfig(updated);
+
+      state = AsyncData(ConfigReady(updated));
+    } catch (e, st) {
+      state = AsyncError(e, st);
+      rethrow;
     }
-
-    final updated = currentState.config.copyWith(
-      accountabilityName: accountabilityName,
-      accountabilityPhone: accountabilityPhone,
-      isConfigured: true,
-    );
-
-    await _storage.saveConfig(updated);
-    state = AsyncData(ConfigReady(updated));
   }
 
   // Refresh config from secure storage (e.g. after settings change)
@@ -85,5 +90,17 @@ class ConfigController extends AsyncNotifier<ConfigState> {
       if (!config.isConfigured) return ConfigOnboarding();
       return ConfigReady(config);
     });
+  }
+  Future<void> setProtectionMode(String mode) async {
+    final current = state.value;
+
+    if (current is! ConfigReady) return;
+
+    final updatedConfig =
+    current.config.copyWith(protectionMode: mode);
+
+    await _storage.saveConfig(updatedConfig);
+
+    state = AsyncData(ConfigReady(updatedConfig)); // ✅ FIX
   }
 }

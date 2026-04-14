@@ -2,10 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:guardian/%20models/guardian_config.dart';
+import 'package:guardian/%20models/guardian_config.dart' show GuardianConfig;
 // FIX: correct import path — no %20 space encoding
 import 'package:guardian/core/password_hasher.dart';
-import 'package:guardian/core/constants.dart';
 import 'package:guardian/providers/config_provider.dart';
 
 final passwordSetupProvider =
@@ -31,6 +30,7 @@ class PasswordSetupController extends AsyncNotifier<void> {
         passwordHash: hash,
         setupDate: DateTime.now(),
         isConfigured: false,
+        protectionMode: 'normal'
       );
 
       final storage = ref.read(secureStorageProvider);
@@ -80,7 +80,10 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
         confirmPassword: confirm,
       );
       if (!mounted) return;
-      context.go(GuardianConstants.routeActivateAdmin);
+      context.go(
+        '/onboarding/protection-mode',
+        extra: password, // ✅ PASS PASSWORD
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:guardian/providers/config_provider.dart';
 import 'package:guardian/services/protection_service.dart';
 import 'package:guardian/core/constants.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PasswordHandoffScreen extends ConsumerStatefulWidget {
   // Plain text password — shown once, user must send to trusted person
@@ -47,6 +48,29 @@ class _PasswordHandoffScreenState
     _phoneController.dispose();
     super.dispose();
   }
+  Future<void> _sendPassword() async {
+    final phone = _phoneController.text.trim();
+    if (phone.isEmpty) {
+      setState(() => _error = 'Enter phone number first');
+      return;
+    }
+
+    final message = Uri.encodeComponent(
+        'Guardian Password:\n\n${widget.plainPassword}\n\nKeep this safe. Do not share.'
+    );
+
+    final uri = Uri.parse('sms:$phone?body=$message');
+
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else {
+        throw Exception();
+      }
+    } catch (_) {
+      setState(() => _error = 'Cannot send SMS. Use copy instead.');
+    }
+  }
 
   Future<void> _finish() async {
     if (_saving) return;
@@ -78,7 +102,8 @@ class _PasswordHandoffScreenState
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = 'Failed to save. Try again.';
+        _error = 'Error: $e';
+        print("SAVE ERROR: $e");
         _saving = false;
       });
     }
@@ -156,6 +181,11 @@ class _PasswordHandoffScreenState
               onPressed: _copyPassword,
               icon: const Icon(Icons.copy, size: 16),
               label: const Text('Copy password'),
+            ),
+            ElevatedButton.icon(
+              onPressed: _sendPassword,
+              icon: const Icon(Icons.sms),
+              label: const Text('Send via SMS'),
             ),
 
             const SizedBox(height: 24),
