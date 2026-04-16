@@ -1,10 +1,15 @@
 package com.example.guardian
 
+import android.Manifest
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.provider.Settings
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -21,8 +26,9 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
             .setMethodCallHandler { call, result ->
 
-
                 when (call.method) {
+
+                    // ==================== ADMIN ====================
                     "activateDeviceAdmin" -> {
                         activateDeviceAdmin()
                         result.success(null)
@@ -32,15 +38,14 @@ class MainActivity : FlutterActivity() {
                         result.success(isAdminActive())
                     }
 
+                    // ==================== VPN ====================
                     "startVpn" -> {
                         val intent = android.net.VpnService.prepare(this)
 
                         if (intent != null) {
-                            // User has NOT granted permission yet → show system popup
                             startActivityForResult(intent, 1001)
                             result.success(false)
                         } else {
-                            // Permission already granted → start VPN directly
                             startVpnService()
                             result.success(true)
                         }
@@ -68,6 +73,7 @@ class MainActivity : FlutterActivity() {
                         result.success(isVpnActive)
                     }
 
+                    // ==================== ACCESSIBILITY ====================
                     "isAccessibilityEnabled" -> {
                         result.success(isAccessibilityEnabled())
                     }
@@ -82,6 +88,22 @@ class MainActivity : FlutterActivity() {
                         result.success(null)
                     }
 
+                    // ==================== CALL ====================
+                    "callNumber" -> {
+                        val phone = call.argument<String>("phone") ?: ""
+                        handleCall(phone)
+                        result.success(true)
+                    }
+
+                    // ==================== SMS ====================
+                    "smsNumber" -> {
+                        val phone = call.argument<String>("phone") ?: ""
+                        val message = call.argument<String>("message") ?: ""
+                        handleSms(phone, message)
+                        result.success(true)
+                    }
+
+                    // ==================== OTHER ====================
                     "getBlockAttemptCount" -> {
                         result.success(0)
                     }
@@ -95,6 +117,48 @@ class MainActivity : FlutterActivity() {
             }
     }
 
+    // ==================== CALL HANDLER ====================
+    private fun handleCall(phone: String) {
+        if (phone.isEmpty()) return
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.CALL_PHONE),
+                2001
+            )
+            return
+        }
+
+        val intent = Intent(Intent.ACTION_CALL)
+        intent.data = Uri.parse("tel:$phone")
+        startActivity(intent)
+    }
+
+    // ==================== SMS HANDLER ====================
+    private fun handleSms(phone: String, message: String) {
+        if (phone.isEmpty()) return
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.SEND_SMS),
+                2002
+            )
+            return
+        }
+
+        val intent = Intent(Intent.ACTION_SENDTO)
+        intent.data = Uri.parse("smsto:$phone")
+        intent.putExtra("sms_body", message)
+        startActivity(intent)
+    }
+
+    // ==================== ADMIN ====================
     private fun activateDeviceAdmin() {
         val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
         intent.putExtra(
@@ -109,6 +173,7 @@ class MainActivity : FlutterActivity() {
         return dpm.isAdminActive(ComponentName(this, GuardianDeviceAdmin::class.java))
     }
 
+    // ==================== ACCESSIBILITY ====================
     private fun isAccessibilityEnabled(): Boolean {
         val enabled = Settings.Secure.getString(
             contentResolver,
@@ -116,20 +181,19 @@ class MainActivity : FlutterActivity() {
         )
         return enabled?.contains(packageName) == true
     }
+
+    // ==================== VPN ====================
     private fun startVpnService() {
         val intent = Intent(this, GuardianVpnService::class.java)
         intent.action = GuardianVpnService.ACTION_START
-        androidx.core.content.ContextCompat.startForegroundService(this, intent)
-
+        ContextCompat.startForegroundService(this, intent)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == 1001) {
-            if (resultCode == RESULT_OK) {
-                startVpnService()
-            }
+        if (requestCode == 1001 && resultCode == RESULT_OK) {
+            startVpnService()
         }
     }
 }

@@ -23,7 +23,37 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
     _movementTimer?.cancel();
     super.dispose();
   }
+  @override
+  void initState() {
+    super.initState();
 
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final configState = ref.read(configProvider).value;
+
+      if (configState is ConfigReady) {
+        final phone = configState.config.accountabilityPhone;
+
+        if (phone != null && phone.isNotEmpty) {
+          final service = ref.read(protectionServiceProvider);
+
+          try {
+            // ✅ SEND SMS
+            await service.smsNumber(
+              phone,
+              message:
+              "⚠️ Guardian Alert\n\nI am struggling right now. Please contact me immediately.",
+            );
+
+            // ✅ OPTIONAL: AUTO CALL (comment this if too aggressive)
+            await service.callNumber(phone);
+
+          } catch (_) {
+            // silent fail
+          }
+        }
+      }
+    });
+  }
   void _startMovementTimer() {
     if (_isRunning) return;
     setState(() => _isRunning = true);
@@ -117,6 +147,15 @@ class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
         appBar: AppBar(
           title: const Text('Emergency'),
           automaticallyImplyLeading: false,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () async {
+              final shouldExit = await _confirmExit();
+              if (shouldExit && context.mounted) {
+                Navigator.of(context).pop();
+              }
+            },
+          ),
           backgroundColor: const Color(0xFF1E293B),
         ),
         backgroundColor: const Color(0xFF0F172A),

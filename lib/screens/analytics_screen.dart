@@ -73,6 +73,10 @@ class AnalyticsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Analytics'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

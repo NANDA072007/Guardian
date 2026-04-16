@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guardian/providers/password_gate_provider.dart';
 import 'package:guardian/providers/config_provider.dart';
 import 'package:guardian/providers/streak_provider.dart';
+import 'package:guardian/services/protection_service.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -167,7 +168,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     final configAsync = ref.watch(configProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+        appBar: AppBar(
+          title: const Text('Settings'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -220,15 +227,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             leading: const Icon(Icons.no_encryption, color: Colors.red),
             title: const Text('Disable Guardian'),
             subtitle: const Text('Requires your trusted person to agree'),
-            onTap: () {
+            onTap: () async {
+              final configState = ref.read(configProvider).value;
+
+              if (configState is ConfigReady) {
+                final phone = configState.config.accountabilityPhone;
+
+                if (phone != null && phone.isNotEmpty) {
+                  final service = ref.read(protectionServiceProvider);
+
+                  try {
+                    // 🔥 CALL FIRST (STRONG SIGNAL)
+                    await service.callNumber(phone);
+
+                    // 🔥 THEN SMS
+                    await service.smsNumber(
+                      phone,
+                      message:
+                      "🚨 Guardian Alert\n\nUser is attempting to disable protection.",
+                    );
+                  } catch (_) {}
+                }
+              }
+              // THEN SHOW WARNING DIALOG
               showDialog(
                 context: context,
                 builder: (ctx) => AlertDialog(
                   title: const Text('Disable Guardian?'),
                   content: const Text(
                     'To disable Guardian you must deactivate Device Admin in '
-                    'Android Settings. Your trusted person must enter the password.\n\n'
-                    'This removes ALL protection immediately.',
+                        'Android Settings.\n\nThis removes ALL protection.',
                   ),
                   actions: [
                     TextButton(

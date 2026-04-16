@@ -12,7 +12,13 @@ class ChallengeScreen extends ConsumerWidget {
     final streakAsync = ref.watch(streakProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('21-Day Challenge')),
+      appBar: AppBar(
+        title: const Text('21-Day Challenge'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
       body: streakAsync.when(
         // FIX: Explicit StreakRecord? type annotation — without it the type is
         // inferred as 'Object' when StreakRecord import is not resolved, making
